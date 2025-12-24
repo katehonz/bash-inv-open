@@ -1,5 +1,7 @@
 # Bash Inv - Bash Web Електронно Фактуриране
 
+![Bash Inv Screenshot](./invd.jpg)
+
 > **Пълната документация на български език е в папката [`docs-bg/`](./docs-bg/README.md)**
 
 ---

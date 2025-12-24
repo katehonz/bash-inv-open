@@ -1,0 +1,114 @@
+/* Clean Number Input Styles - Remove spinner arrows */
+
+/* Chrome, Safari, Edge, Opera */
+.clean-number-input input::-webkit-outer-spin-button,
+.clean-number-input input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.clean-number-input input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Enhanced styling for number inputs */
+.clean-number-input .MuiOutlinedInput-root {
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+}
+
+.clean-number-input .MuiOutlinedInput-root:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.clean-number-input .MuiOutlinedInput-root.Mui-focused {
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
+}
+
+/* Clean modal styles */
+.clean-modal .MuiDialog-paper {
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.clean-modal .MuiDialogTitle-root {
+  padding: 24px 24px 16px 24px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+.clean-modal .MuiDialogContent-root {
+  padding: 24px;
+}
+
+.clean-modal .MuiDialogActions-root {
+  padding: 16px 24px 24px 24px;
+  gap: 12px;
+}
+
+/* Enhanced form styling */
+.clean-form .MuiTextField-root {
+  margin-bottom: 16px;
+}
+
+.clean-form .MuiTextField-root .MuiOutlinedInput-root {
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+}
+
+.clean-form .MuiTextField-root .MuiOutlinedInput-root:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.clean-form .MuiTextField-root .MuiOutlinedInput-root.Mui-focused {
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.12);
+}
+
+/* Clean button styling */
+.clean-button {
+  border-radius: 8px !important;
+  padding: 10px 24px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.clean-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.clean-button.MuiButton-contained {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.clean-button.MuiButton-contained:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+}
+
+/* Card enhancements */
+.clean-card {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.3s ease-in-out !important;
+}
+
+.clean-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Stack spacing improvements */
+.clean-stack {
+  gap: 20px !important;
+}
+
+/* Typography enhancements */
+.clean-title {
+  font-weight: 700 !important;
+  color: #2c3e50 !important;
+  margin-bottom: 24px !important;
+}

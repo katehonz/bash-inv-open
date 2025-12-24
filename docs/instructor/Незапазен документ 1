@@ -1,0 +1,5 @@
+database type : postgresql
+host localhost
+database name: sp-inv-app
+user: postgres
+password:  pas+123

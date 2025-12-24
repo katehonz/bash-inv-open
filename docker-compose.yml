@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  # Invoice Backend (Spring Boot/Java)
+  invoicing_backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: invoicing_backend
+    environment:
+      # Database connection - използва PostgreSQL от rs-ac-bg мрежата
+      SPRING_DATASOURCE_URL: jdbc:postgresql://accounting_db:5432/sp_inv_app
+      SPRING_DATASOURCE_USERNAME: app
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-MySecurePassword123456789ABCDEFGH}
+
+      # JPA/Hibernate
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_JPA_SHOW_SQL: ${SHOW_SQL:-false}
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+
+      # Flyway migrations
+      SPRING_FLYWAY_ENABLED: true
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: true
+      SPRING_FLYWAY_BASELINE_VERSION: 0
+
+      # GraphQL
+      SPRING_GRAPHQL_GRAPHIQL_ENABLED: ${GRAPHIQL_ENABLED:-false}
+      SPRING_GRAPHQL_PATH: /graphql
+
+      # JWT Security
+      JWT_SECRET: ${JWT_SECRET:-MySecureJwtSecretKeyThatIsAtLeast32CharactersLong!}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400}
+
+      # Currency settings
+      CURRENCY_DEFAULT_CURRENCY: EUR
+      CURRENCY_FORCE_EUROZONE_MODE: true
+      CURRENCY_ENABLE_BNB_RATES: false
+      CURRENCY_ENABLE_ECB_RATES: true
+
+      # VIES Integration
+      VIES_ENABLED: true
+      VIES_TIMEOUT: 5000
+      VIES_CACHE_TTL: 1800
+
+      # Logging
+      LOGGING_LEVEL_ROOT: ${LOG_LEVEL:-INFO}
+      LOGGING_LEVEL_COM_INVOICEAPP: ${LOG_LEVEL:-INFO}
+
+      # Server
+      SERVER_PORT: 8080
+
+      # Application URLs
+      APP_FRONTEND_URL: https://inv.cyberbuch.org
+
+    expose:
+      - "8080"
+    depends_on:
+      - init_db
+    volumes:
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+    restart: unless-stopped
+    networks:
+      accounting_network:
+        ipv4_address: 172.20.0.40
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Invoice Frontend (React)
+  invoicing_frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: invoicing_frontend
+    environment:
+      REACT_APP_API_URL: /graphql
+      REACT_APP_DOMAIN: inv.cyberbuch.org
+    expose:
+      - "80"
+    depends_on:
+      - invoicing_backend
+    restart: unless-stopped
+    networks:
+      accounting_network:
+        ipv4_address: 172.20.0.41
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Init DB - създава базата данни за sp-inv ако не съществува
+  init_db:
+    image: postgres:15
+    container_name: invoicing_init_db
+    environment:
+      PGHOST: accounting_db
+      PGPORT: 5432
+      PGUSER: app
+      PGPASSWORD: ${DB_PASSWORD:-MySecurePassword123456789ABCDEFGH}
+    command: >
+      sh -c "
+        echo 'Waiting for PostgreSQL to be ready...';
+        until pg_isready -h accounting_db -p 5432 -U app; do
+          sleep 2;
+        done;
+        echo 'PostgreSQL is ready!';
+        echo 'Creating sp_inv_app database if not exists...';
+        psql -h accounting_db -U app -d accounting -tc \"SELECT 1 FROM pg_database WHERE datname = 'sp_inv_app'\" | grep -q 1 || psql -h accounting_db -U app -d accounting -c 'CREATE DATABASE sp_inv_app';
+        echo 'Database setup complete!';
+      "
+    networks:
+      - accounting_network
+    restart: "no"
+
+networks:
+  # Свързва се към съществуващата мрежа на rs-ac-bg
+  accounting_network:
+    external: true
+    name: rs-ac-bg_accounting_network

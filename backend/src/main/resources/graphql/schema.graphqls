@@ -1,0 +1,1213 @@
+# Определя възможните потребителски роли
+enum Role {
+    SUPER_ADMIN
+    ADMIN
+    USER
+    ACCOUNTANT
+}
+
+# Определя статуса на фактура (запазваме за съвместимост)
+enum InvoiceStatus {
+    DRAFT
+    SENT
+    PAID
+    VOID
+}
+
+# Определя типовете документи
+enum DocumentType {
+    INVOICE          # Фактура (данъчен документ)
+    CREDIT_NOTE      # Кредитно известие (данъчен документ)
+    DEBIT_NOTE       # Дебитно известие (данъчен документ)
+    PROFORMA         # Проформа фактура (неданъчен документ)
+}
+
+# Определя статуса на документи
+enum DocumentStatus {
+    DRAFT           # Чернова
+    FINAL           # Приключен
+    CANCELLED       # Анулиран
+}
+
+# Определя типовете номерации
+enum SequenceType {
+    TAX_DOCUMENT      # Данъчни документи
+    NON_TAX_DOCUMENT  # Неданъчни документи
+}
+
+# Тип за фирма
+type Company {
+    id: ID!
+    name: String!
+    nameEn: String
+    address: String
+    vatNumber: String
+    eik: String
+    userLimit: Int!
+    users: [User]
+    activeUserCount: Int
+    adminUsername: String
+    paymentMethods: [PaymentMethod]
+    bankAccounts: [BankAccount]
+    phone: String
+    email: String
+    website: String
+    isVatRegistered: Boolean
+    taxRegistrationDate: String
+    logoUrl: String
+    companyStampUrl: String
+    signatureUrl: String
+    invoiceFooter: String
+    invoiceFooterEn: String
+    defaultPaymentTerms: Int
+    compiledBy: String
+}
+
+# Тип за потребител
+type User {
+    id: ID!
+    username: String!
+    email: String!
+    role: Role!
+    company: Company
+    isActive: Boolean!
+}
+
+# Тип за клиент на фирма
+type Client {
+    id: ID!
+    name: String!
+    nameEn: String
+    address: String
+    vatNumber: String
+    eik: String
+    phone: String
+    email: String
+    website: String
+    registrationAddress: String
+    clientType: String
+    isEuVatPayer: Boolean
+    countryCode: String
+    isIndividual: Boolean
+    paymentTerms: Int
+    creditLimit: Float
+    discountPercent: Float
+    notes: String
+    isActive: Boolean
+    createdAt: String
+    updatedAt: String
+    company: Company!
+}
+
+# Тип за резултат от създаване на клиент
+type ClientCreationResult {
+    success: Boolean!
+    client: Client
+    message: String
+    errors: [String]
+    fromVies: Boolean
+    requiresManualEntry: Boolean
+    errorMessage: String
+    errorType: String
+    viesData: ViesCompanyData
+}
+
+# Тип за броя документи на клиент
+type ClientDocumentsCount {
+    totalDocuments: Int!
+    hasDocuments: Boolean!
+}
+
+# Тип за метод на плащане
+type PaymentMethod {
+    id: ID!
+    name: String!
+    nameEn: String
+    methodCode: String!
+    isActive: Boolean!
+    isDefault: Boolean!
+    requiresBankAccount: Boolean!
+    sortOrder: Int
+    description: String
+    company: Company!
+}
+
+# Тип за банкова сметка
+type BankAccount {
+    id: ID!
+    bankName: String!
+    iban: String!
+    bic: String!
+    currencyCode: String!
+    accountName: String
+    isActive: Boolean!
+    isDefault: Boolean!
+    sortOrder: Int
+    description: String
+    company: Company!
+    displayName: String!
+    formattedIban: String!
+    isBgnAccount: Boolean!
+    isForeignCurrencyAccount: Boolean!
+}
+
+# Тип за фактура (запазваме за съвместимост)
+type Invoice {
+    id: ID!
+    invoiceNumber: String!
+    issueDate: String! # Ще използваме String за дати, за простота
+    dueDate: String!
+    status: InvoiceStatus!
+    totalAmount: Float!
+    client: Client!
+}
+
+# Тип за документи (нова унифицирана структура)
+type Document {
+    id: ID!
+    documentUuid: String!
+    documentNumber: String!
+    documentType: DocumentType!
+    issueDate: String!
+    vatDate: String
+    dueDate: String!
+    status: DocumentStatus!
+    totalAmountWithVat: Float!
+    subtotalAmount: Float!
+    vatAmount: Float!
+    totalAmountWithVatBaseCurrency: Float!
+    subtotalAmountBaseCurrency: Float!
+    vatAmountBaseCurrency: Float!
+    exchangeRate: Float
+    exchangeRateDate: String
+    company: Company!
+    client: Client!
+    clientId: ID!
+    clientName: String!
+    currencyCode: String
+    notes: String
+    createdAt: String!
+    updatedAt: String!
+    fullDocumentNumber: String!
+    isTaxDocument: Boolean!
+    isNonTaxDocument: Boolean!
+    hasValidVatDate: Boolean!
+    effectiveVatDate: String
+    documentItems: [DocumentItem]
+    paymentMethod: PaymentMethod
+    bankAccount: BankAccount
+    paidAt: String
+    isPaid: Boolean!
+    cancelledAt: String
+    cancellationReason: String
+    isCancelled: Boolean!
+}
+
+# Тип за артикул/услуга
+type Item {
+    id: ID!
+    itemNumber: String!
+    name: String!
+    nameEn: String
+    defaultVatRate: Float!
+    accountingAccountNumber: String
+    company: Company!
+    isActive: Boolean!
+    description: String
+    unitOfMeasure: String
+    unitPrice: Float
+}
+
+# Тип за ред от документ
+type DocumentItem {
+    id: ID!
+    document: Document!
+    item: Item!
+    quantity: Float!
+    unitPrice: Float!
+    vatRate: Float!
+    vatExemptionReason: VatExemptionReason
+    lineTotal: Float!
+    vatAmount: Float!
+    lineTotalWithVat: Float!
+    itemDescription: String
+    itemDescriptionEn: String
+    lineNumber: Int
+    effectiveItemName: String!
+    effectiveItemNameEn: String
+    isZeroVatRate: Boolean!
+    requiresVatExemptionReason: Boolean!
+}
+
+# Тип за ставка на ДДС
+type VatRate {
+    id: ID!
+    rateValue: Float!
+    rateName: String!
+    rateNameEn: String
+    isActive: Boolean!
+    isDefault: Boolean!
+    description: String
+    sortOrder: Int
+    isZeroRate: Boolean!
+    formattedRate: String!
+}
+
+# Тип за основание за неначисляване на ДДС
+type VatExemptionReason {
+    id: ID!
+    reasonCode: String!
+    reasonName: String!
+    reasonNameEn: String
+    legalBasis: String!
+    legalBasisEn: String
+    isActive: Boolean!
+    description: String
+    sortOrder: Int
+    fullReason: String!
+    fullReasonEn: String
+    ublCategoryCode: String
+    ublExemptionCode: String
+}
+
+# Тип за валута
+type Currency {
+    code: String!
+    name: String!
+    symbol: String
+    isActive: Boolean!
+}
+
+# Тип за валутен курс
+type ExchangeRate {
+    id: ID!
+    currency: Currency!
+    rateDate: String!
+    rate: Float!
+    baseCurrency: String!
+}
+
+# Тип за държава (ISO 3166-1)
+type Country {
+    code: String!
+    name: String!
+    nameEn: String
+    isEuMember: Boolean!
+    peppolSchemeId: String
+}
+
+# Тип за мерна единица (UN/ECE Rec 20)
+type UnitOfMeasure {
+    code: String!
+    name: String!
+    nameEn: String
+    symbol: String
+    category: String
+}
+
+# Тип за код на тип документ (UNCL1001)
+type DocumentTypeCode {
+    code: String!
+    name: String!
+    nameEn: String!
+    description: String
+    descriptionEn: String
+    appliesTo: String!
+    isCommon: Boolean!
+    sortOrder: Int
+}
+
+# Тип за статус на валутната система
+type CurrencySystemStatus {
+    eurozoneActive: Boolean!
+    transitionDate: String!
+    activeProvider: String!
+    baseCurrency: String!
+    defaultCurrency: String!
+    bgnToEurRate: Float!
+    forceEurozoneMode: Boolean!
+    success: Boolean
+    message: String
+    ratesCount: Int
+    fromDate: String
+    toDate: String
+}
+
+# Тип за VIES валидация
+type ViesValidationResult {
+    valid: Boolean!
+    name: String
+    address: String
+    requestDate: String!
+    hasError: Boolean!
+    errorMessage: String
+}
+
+# Тип за VIES данни за компания
+type ViesCompanyData {
+    vatNumber: String
+    countryCode: String
+    isValid: Boolean!
+    companyName: String
+    address: String
+    requestDate: String!
+    hasError: Boolean!
+    errorMessage: String
+}
+
+# Тип за статистика на документи
+type DocumentStatistics {
+    totalDocuments: Int!
+    draftDocuments: Int!
+    sentDocuments: Int!
+    paidDocuments: Int!
+    voidDocuments: Int!
+    overdueDocuments: Int!
+    taxDocuments: Int!
+    nonTaxDocuments: Int!
+}
+
+# Тип за dashboard статистики
+type DashboardStats {
+    totalClients: Int!
+    totalInvoices: Int!
+    totalRevenue: Float!
+    pendingInvoices: Int!
+    overduedInvoices: Int!
+    recentInvoices: [RecentInvoice]!
+    monthlyRevenue: [MonthlyRevenue]!
+}
+
+# Тип за скорошни фактури
+type RecentInvoice {
+    id: ID!
+    documentNumber: String!
+    clientName: String!
+    totalAmountWithVat: Float!
+    currency: String!
+    issueDate: String!
+    dueDate: String!
+    status: DocumentStatus!
+}
+
+# Тип за месечни приходи
+type MonthlyRevenue {
+    month: String!
+    revenue: Float!
+}
+
+# Тип за номерации
+type DocumentNumberSequence {
+    id: ID!
+    company: Company!
+    sequenceType: SequenceType!
+    currentNumber: String!
+    nextNumber: String!
+    lastUpdated: String!
+}
+
+# Входни данни за създаване на фирма
+input CreateCompanyInput {
+    name: String!
+    nameEn: String
+    address: String
+    vatNumber: String
+    eik: String
+    phone: String
+    email: String
+    website: String
+    userLimit: Int
+}
+
+# Входни данни за обновяване на фирма
+input UpdateCompanyInput {
+    name: String
+    nameEn: String
+    eik: String
+    address: String
+    vatNumber: String
+    phone: String
+    email: String
+    website: String
+    isVatRegistered: Boolean
+    taxRegistrationDate: String
+    logoUrl: String
+    companyStampUrl: String
+    signatureUrl: String
+    invoiceFooter: String
+    invoiceFooterEn: String
+    defaultPaymentTerms: Int
+    compiledBy: String
+}
+
+# Тип за резултат от UBL експорт
+type UblExportResult {
+    success: Boolean!
+    xml: String                # Base64 encoded XML или plain XML
+    filename: String
+    message: String
+    validationErrors: [String]
+}
+
+# Основни заявки (Queries)
+type Query {
+    # Текущ потребител (от JWT токена)
+    me: User
+
+    # UBL Export заявки
+    exportDocumentAsUbl(documentId: ID!): UblExportResult!
+
+    allCompanies: [Company]!
+    companyById(id: ID!): Company
+
+    # Заявки за потребители
+    allUsers: [User]!
+    usersByCompany(companyId: ID!): [User]!
+    userById(id: ID!): User
+    
+    # Заявки за клиенти
+    clientsByCompany(companyId: ID!): [Client]!
+    client(id: ID!): Client
+    clientDocumentsCount(clientId: ID!): ClientDocumentsCount!
+    
+    invoicesByCompany(companyId: ID!): [Invoice]!
+    
+    # Нови заявки за документи
+    documentsByCompany(companyId: ID!): [Document]!
+    documentsByType(companyId: ID!, documentType: DocumentType!): [Document]!
+    documentsByStatus(companyId: ID!, status: DocumentStatus!): [Document]!
+    documentsFiltered(filter: DocumentFilter!): [Document]!
+    documentById(id: ID!): Document
+    documentByNumber(companyId: ID!, documentNumber: String!): Document
+    
+    # Заявки за данъчни и неданъчни документи
+    taxDocuments(companyId: ID!): [Document]!
+    nonTaxDocuments(companyId: ID!): [Document]!
+    overdueDocuments(companyId: ID!): [Document]!
+    
+    # Статистики
+    documentStatistics(companyId: ID!): DocumentStatistics!
+    dashboardStats(companyId: ID!): DashboardStats!
+    
+    # Номерации
+    nextDocumentNumber(companyId: ID!, documentType: DocumentType!): String!
+    documentSequences(companyId: ID!): [DocumentNumberSequence]!
+    
+    # Заявки за артикули
+    itemsByCompany(companyId: ID!): [Item]!
+    activeItemsByCompany(companyId: ID!): [Item]!
+    itemById(id: ID!): Item
+    itemByNumber(companyId: ID!, itemNumber: String!): Item
+    searchItems(companyId: ID!, searchTerm: String!): [Item]!
+    
+    # Заявки за ДДС ставки
+    allVatRates: [VatRate]!
+    activeVatRates: [VatRate]!
+    defaultVatRate: VatRate
+    zeroVatRates: [VatRate]!
+    
+    # Заявки за основания за неначисляване на ДДС
+    allVatExemptionReasons: [VatExemptionReason]!
+    activeVatExemptionReasons: [VatExemptionReason]!
+    vatExemptionReasonById(id: ID!): VatExemptionReason
+    vatExemptionReasonByCode(code: String!): VatExemptionReason
+    
+    # Заявки за редове от документи
+    documentItemsByDocument(documentId: ID!): [DocumentItem]!
+    documentTotal(documentId: ID!): Float!
+    documentVatTotal(documentId: ID!): Float!
+    documentSubTotal(documentId: ID!): Float!
+    
+    # Заявки за методи на плащане
+    paymentMethodsByCompany(companyId: ID!): [PaymentMethod]!
+    activePaymentMethodsByCompany(companyId: ID!): [PaymentMethod]!
+    paymentMethodById(id: ID!): PaymentMethod
+    paymentMethodByCode(companyId: ID!, methodCode: String!): PaymentMethod
+    defaultPaymentMethod(companyId: ID!): PaymentMethod
+    bankTransferPaymentMethods(companyId: ID!): [PaymentMethod]!
+    
+    # Заявки за банкови сметки
+    bankAccountsByCompany(companyId: ID!): [BankAccount]!
+    activeBankAccountsByCompany(companyId: ID!): [BankAccount]!
+    bankAccountById(id: ID!): BankAccount
+    bankAccountByIban(companyId: ID!, iban: String!): BankAccount
+    defaultBankAccount(companyId: ID!): BankAccount
+    bankAccountsByCurrency(companyId: ID!, currencyCode: String!): [BankAccount]!
+    bgnBankAccounts(companyId: ID!): [BankAccount]!
+    foreignCurrencyBankAccounts(companyId: ID!): [BankAccount]!
+    
+    # Заявки за валути и курсове
+    allCurrencies: [Currency]!
+    activeCurrencies: [Currency]!
+    currencyByCode(code: String!): Currency
+    currencySystemStatus: CurrencySystemStatus!
+    exchangeRatesForDate(date: String!): [ExchangeRate]!
+    latestExchangeRates: [ExchangeRate]!
+    exchangeRateForCurrency(currencyCode: String!, date: String!): ExchangeRate
+    
+    # Номенклатури - Държави (ISO 3166-1)
+    allCountries: [Country]!
+    euCountries: [Country]!
+    searchCountries(search: String!): [Country]!
+    countryByCode(code: String!): Country
+    peppolCountries: [Country]!
+
+    # Номенклатури - Мерни единици (UN/ECE Rec 20)
+    allUnitsOfMeasure: [UnitOfMeasure]!
+    searchUnitsOfMeasure(search: String!): [UnitOfMeasure]!
+    unitsOfMeasureByCategory(category: String!): [UnitOfMeasure]!
+    unitCategories: [String]!
+    unitOfMeasureByCode(code: String!): UnitOfMeasure
+
+    # Номенклатури - Типове документи (UNCL1001)
+    allDocumentTypeCodes: [DocumentTypeCode]!
+    commonDocumentTypeCodes: [DocumentTypeCode]!
+    invoiceTypeCodes: [DocumentTypeCode]!
+    creditNoteTypeCodes: [DocumentTypeCode]!
+    searchDocumentTypeCodes(search: String, appliesTo: String): [DocumentTypeCode]!
+    documentTypeCodeByCode(code: String!): DocumentTypeCode
+    
+    # VIES заявки
+    validateVatNumber(vatNumber: String!): ViesValidationResult!
+    getViesCompanyData(vatNumber: String!): ViesCompanyData!
+    searchClientByVatNumber(companyId: ID!, vatNumber: String!): ClientCreationResult!
+    clientByVatNumber(companyId: ID!, vatNumber: String!): Client
+    activeClientsByCompany(companyId: ID!): [Client]!
+    searchClients(companyId: ID!, searchTerm: String!): [Client]!
+    
+    # SMTP заявки
+    activeSmtpSettings: SmtpSettings
+    allSmtpSettings: [SmtpSettings]!
+    smtpSettingsById(id: ID!): SmtpSettings
+    hasActiveSmtpSettings: Boolean!
+    smtpConfigurationStatus: SmtpConfigurationStatus!
+    
+    # Password Reset заявки
+    validatePasswordResetToken(token: String!): TokenValidationResult!
+    passwordResetTokenInfo(token: String!): TokenInfo!
+
+    # Public document verification
+    verifyDocument(uuid: String!): PublicDocumentInfo
+
+    # Backup заявки
+    backupSettings: BackupSettings
+    backupHistory: [BackupHistory]!
+    allBackupHistory: [BackupHistory]!
+    backupById(id: ID!): BackupHistory
+    backupStats: BackupStats!
+}
+
+# Публична информация за документ (за валидатора)
+type PublicDocumentInfo {
+    documentUuid: String!
+    documentNumber: String!
+    documentType: DocumentType!
+    issueDate: String!
+    totalAmountWithVat: Float!
+    currencyCode: String!
+    companyName: String!
+    companyEik: String!
+    clientName: String!
+    isValid: Boolean!
+}
+
+# Входни данни за логин
+input LoginInput {
+    username: String!
+    password: String!
+}
+
+# Отговор при успешен логин
+type AuthResponse {
+    token: String!
+    userId: ID!
+    username: String!
+    email: String!
+    role: String!
+    companyId: ID
+    companyName: String
+}
+
+# Входни данни за създаване на потребител
+input CreateUserInput {
+    username: String!
+    email: String!
+    password: String!
+    role: Role!
+    companyId: ID
+    isActive: Boolean
+}
+
+# Входни данни за обновяване на потребител
+input UpdateUserInput {
+    id: ID!
+    username: String
+    email: String
+    role: Role
+    isActive: Boolean
+}
+
+# Входни данни за промяна на парола
+input ChangeUserPasswordInput {
+    userId: ID!
+    newPassword: String!
+}
+
+# Входни данни за създаване на клиент
+input CreateClientInput {
+    name: String!
+    nameEn: String
+    address: String
+    vatNumber: String
+    eik: String
+    countryCode: String
+    companyId: ID!
+}
+
+# Входни данни за създаване на клиент с VIES интеграция
+input CreateClientWithViesInput {
+    companyId: String!
+    vatNumber: String
+    name: String
+    nameEn: String
+    address: String
+    eik: String
+    countryCode: String
+    contactPerson: String
+    phone: String
+    email: String
+    website: String
+    clientType: String
+    paymentTerms: Int
+    creditLimit: Float
+    discountPercent: Float
+    isIndividual: Boolean
+    forceManualEntry: Boolean
+}
+
+# Входни данни за обновяване на клиент
+input UpdateClientInput {
+    name: String
+    nameEn: String
+    eik: String
+    address: String
+    vatNumber: String
+    countryCode: String
+    phone: String
+    email: String
+    website: String
+    clientType: String
+    isEuVatPayer: Boolean
+    isIndividual: Boolean
+    isActive: Boolean
+    paymentTerms: String
+    creditLimit: Float
+    discountPercent: Float
+    notes: String
+}
+
+# Резултат от изтриване на клиент
+type DeleteClientResult {
+    success: Boolean!
+    message: String!
+}
+
+# Входни данни за създаване на фактура (запазваме за съвместимост)
+input CreateInvoiceInput {
+    invoiceNumber: String!
+    issueDate: String!
+    dueDate: String!
+    totalAmount: Float!
+    companyId: ID!
+    clientId: ID!
+}
+
+# Входни данни за създаване на документ
+# Входни данни за създаване на документ
+input CreateDocumentInput {
+    documentType: DocumentType!
+    issueDate: String!
+    vatDate: String         # Дата на данъчното събитие - само за данъчни документи
+    dueDate: String!
+    companyId: ID!
+    clientId: ID!
+    items: [DocumentItemInput!]! # Списък с артикули
+    currencyCode: String # ISO 4217 code, e.g., "EUR". Defaults to BGN if not provided.
+    notes: String       # Бележки към документа
+    paymentMethodId: ID # ID на метода на плащане
+    bankAccountId: ID   # ID на банковата сметка
+}
+
+# Входни данни за един ред от документ
+input DocumentItemInput {
+    itemId: ID!
+    quantity: Float!
+    unitPrice: Float!       # Ед. цена - може да се различава от тази в каталога
+    vatRate: Float!         # ДДС ставка - може да се различава от тази в каталога
+    vatRateId: ID           # ID на ДДС ставка (алтернатива на vatRate)
+    vatExemptionReasonId: ID # ID на основанието за неначисляване на ДДС (при 0% ДДС)
+    itemDescription: String # Описание - може да се различава от това в каталога
+}
+
+# Входни данни за филтриране на документи
+input DocumentFilter {
+    companyId: ID!
+    documentType: DocumentType
+    status: DocumentStatus
+    clientId: ID
+    startDate: String
+    endDate: String
+}
+
+# Входни данни за копиране на документ в друг тип
+input CopyDocumentInput {
+    sourceDocumentId: ID!           # ID на документа-източник
+    targetDocumentType: DocumentType!  # Целевият тип документ
+    issueDate: String               # Дата на издаване (по подразбиране: днес)
+    vatDate: String                 # Дата на данъчното събитие (само за данъчни документи)
+    dueDate: String                 # Срок за плащане (по подразбиране: от оригинала)
+}
+
+# Операции за промяна на данни (Mutations)
+type Mutation {
+    # Автентикация
+    login(input: LoginInput!): AuthResponse!
+    logout: String!
+    
+    createCompany(input: CreateCompanyInput!): Company!
+    updateCompany(id: ID!, input: UpdateCompanyInput!): Company!
+    createUser(input: CreateUserInput!): User!
+    updateUser(input: UpdateUserInput!): User!
+    changeUserPassword(input: ChangeUserPasswordInput!): Boolean!
+    activateUser(userId: ID!): User!
+    deactivateUser(userId: ID!): User!
+    initializeSuperAdmin: Boolean!
+    resetSuperAdminPassword: Boolean!
+    createClient(input: CreateClientInput!): Client!
+    createClientWithVies(input: CreateClientWithViesInput!): ClientCreationResult!
+    updateClient(id: ID!, input: UpdateClientInput!): Client!
+    updateClientWithVies(clientId: ID!, newVatNumber: String!): ClientCreationResult!
+    deleteClient(id: ID!): DeleteClientResult!
+    createInvoice(input: CreateInvoiceInput!): Invoice!
+    
+    # Нови мутации за документи
+    createDocument(input: CreateDocumentInput!): Document!
+    copyDocument(input: CopyDocumentInput!): Document!  # Копиране на документ в друг тип
+    updateDocumentStatus(documentId: ID!, status: DocumentStatus!): Document!
+    voidDocument(documentId: ID!): Document!
+    markDocumentAsPaid(documentId: ID!, paidAt: String): Document!
+    sendDocument(documentId: ID!): Document!
+    cancelDocument(documentId: ID!, reason: String): Document!
+    revertToDraft(documentId: ID!): Document!
+    
+    # Управление на номерации
+    initializeCompanySequences(companyId: ID!): [DocumentNumberSequence]!
+    resetSequence(companyId: ID!, sequenceType: SequenceType!, newStartNumber: Int!): DocumentNumberSequence!
+    
+    # Мутации за артикули
+    createItem(input: CreateItemInput!): Item!
+    updateItem(input: UpdateItemInput!): Item!
+    deactivateItem(id: ID!): Item!
+    activateItem(id: ID!): Item!
+    deleteItem(id: ID!): Boolean!
+    
+    # Мутации за редове от документи
+    addDocumentItem(input: AddDocumentItemInput!): DocumentItem!
+    updateDocumentItem(input: UpdateDocumentItemInput!): DocumentItem!
+    removeDocumentItem(id: ID!): Boolean!
+    
+    # Мутации за ДДС ставки
+    createVatRate(input: CreateVatRateInput!): VatRate!
+    updateVatRate(input: UpdateVatRateInput!): VatRate!
+    setDefaultVatRate(id: ID!): VatRate!
+    deleteVatRate(id: ID!): Boolean!
+    
+    # Мутации за основания за неначисляване на ДДС
+    createVatExemptionReason(input: CreateVatExemptionReasonInput!): VatExemptionReason!
+    updateVatExemptionReason(input: UpdateVatExemptionReasonInput!): VatExemptionReason!
+    deleteVatExemptionReason(id: ID!): Boolean!
+    
+    # Мутации за методи на плащане
+    createPaymentMethod(input: CreatePaymentMethodInput!): PaymentMethod!
+    updatePaymentMethod(input: UpdatePaymentMethodInput!): PaymentMethod!
+    setDefaultPaymentMethod(id: ID!): PaymentMethod!
+    activatePaymentMethod(id: ID!): PaymentMethod!
+    deactivatePaymentMethod(id: ID!): PaymentMethod!
+    
+    # Мутации за банкови сметки
+    createBankAccount(input: CreateBankAccountInput!): BankAccount!
+    updateBankAccount(input: UpdateBankAccountInput!): BankAccount!
+    setDefaultBankAccount(id: ID!): BankAccount!
+    activateBankAccount(id: ID!): BankAccount!
+    deactivateBankAccount(id: ID!): BankAccount!
+    
+    # Мутации за валути и курсове
+    syncExchangeRates: CurrencySystemStatus!
+    syncHistoricalRates(fromDate: String!, toDate: String!): CurrencySystemStatus!
+    setEurozoneMode(forceEurozoneMode: Boolean!): CurrencySystemStatus!
+    createCurrency(code: String!, name: String!, symbol: String): Currency!
+    clearAllExchangeRates: CurrencySystemStatus!
+    activateCurrency(code: String!): Currency!
+    deactivateCurrency(code: String!): Currency!
+    toggleCurrencyActive(code: String!): Currency!
+    
+    # SMTP мутации
+    createSmtpSettings(input: CreateSmtpSettingsInput!): SmtpSettings!
+    updateSmtpSettings(id: ID!, input: UpdateSmtpSettingsInput!): SmtpSettings!
+    testSmtpSettings(id: ID!): SmtpTestResult!
+    activateSmtpSettings(id: ID!): SmtpSettings!
+    deactivateSmtpSettings(id: ID!): SmtpSettings!
+    deleteSmtpSettings(id: ID!): Boolean!
+    
+    # Password Reset мутации
+    requestPasswordReset(input: RequestPasswordResetInput!): PasswordResetResult!
+    resetPassword(input: ResetPasswordInput!): PasswordResetResult!
+    cleanupExpiredPasswordResetTokens: Boolean!
+
+    # Backup мутации
+    saveBackupSettings(input: BackupSettingsInput!): BackupSettings!
+    testBackupConnection: String!
+    createManualBackup: BackupHistory!
+    deleteBackup(id: ID!): Boolean!
+    getBackupDownloadUrl(id: ID!): String
+
+    # Document email мутация
+    sendDocumentByEmail(input: SendDocumentEmailInput!): EmailResult!
+}
+
+# Входни данни за изпращане на документ по имейл
+input SendDocumentEmailInput {
+    documentId: ID!
+    recipientEmail: String!
+    pdfBase64: String!
+    includeUblXml: Boolean  # Ако е true, прикачва UBL XML за ERP интеграция
+}
+
+# Резултат от изпращане на имейл
+type EmailResult {
+    success: Boolean!
+    message: String!
+}
+
+# Входни данни за създаване на артикул
+input CreateItemInput {
+    itemNumber: String!
+    name: String!
+    nameEn: String
+    defaultVatRate: Float!
+    accountingAccountNumber: String
+    companyId: ID!
+    description: String
+    unitOfMeasure: String
+    unitPrice: Float
+}
+
+# Входни данни за обновяване на артикул
+input UpdateItemInput {
+    id: ID!
+    itemNumber: String
+    name: String
+    nameEn: String
+    defaultVatRate: Float
+    accountingAccountNumber: String
+    description: String
+    unitOfMeasure: String
+    unitPrice: Float
+}
+
+# Входни данни за добавяне на ред към документ
+input AddDocumentItemInput {
+    documentId: ID!
+    itemId: ID!
+    quantity: Float!
+    unitPrice: Float!
+    vatRate: Float!
+    vatExemptionReasonId: ID
+    itemDescription: String
+    itemDescriptionEn: String
+    lineNumber: Int
+}
+
+# Входни данни за обновяване на ред от документ
+input UpdateDocumentItemInput {
+    id: ID!
+    quantity: Float
+    unitPrice: Float
+    vatRate: Float
+    vatExemptionReasonId: ID
+    itemDescription: String
+    itemDescriptionEn: String
+    lineNumber: Int
+}
+
+# Входни данни за създаване на ДДС ставка
+input CreateVatRateInput {
+    rateValue: Float!
+    rateName: String!
+    rateNameEn: String
+    description: String
+    isDefault: Boolean
+    sortOrder: Int
+}
+
+# Входни данни за обновяване на ДДС ставка
+input UpdateVatRateInput {
+    id: ID!
+    rateValue: Float
+    rateName: String
+    rateNameEn: String
+    description: String
+    isDefault: Boolean
+    sortOrder: Int
+    isActive: Boolean
+}
+
+# Входни данни за създаване на метод на плащане
+input CreatePaymentMethodInput {
+    name: String!
+    nameEn: String
+    methodCode: String!
+    requiresBankAccount: Boolean
+    sortOrder: Int
+    description: String
+    companyId: ID!
+    isDefault: Boolean
+}
+
+# Входни данни за обновяване на метод на плащане
+input UpdatePaymentMethodInput {
+    id: ID!
+    name: String
+    nameEn: String
+    methodCode: String
+    requiresBankAccount: Boolean
+    sortOrder: Int
+    description: String
+    isActive: Boolean
+    isDefault: Boolean
+}
+
+# Входни данни за създаване на банкова сметка
+input CreateBankAccountInput {
+    bankName: String!
+    iban: String!
+    bic: String!
+    currencyCode: String!
+    accountName: String
+    sortOrder: Int
+    description: String
+    companyId: ID!
+    isDefault: Boolean
+}
+
+# Входни данни за обновяване на банкова сметка
+input UpdateBankAccountInput {
+    id: ID!
+    bankName: String
+    iban: String
+    bic: String
+    currencyCode: String
+    accountName: String
+    sortOrder: Int
+    description: String
+    isActive: Boolean
+    isDefault: Boolean
+}
+
+# Входни данни за създаване на основание за неначисляване на ДДС
+input CreateVatExemptionReasonInput {
+    reasonCode: String!
+    reasonName: String!
+    reasonNameEn: String
+    legalBasis: String!
+    legalBasisEn: String
+    description: String
+    sortOrder: Int
+}
+
+# Входни данни за обновяване на основание за неначисляване на ДДС
+input UpdateVatExemptionReasonInput {
+    id: ID!
+    reasonCode: String
+    reasonName: String
+    reasonNameEn: String
+    legalBasis: String
+    legalBasisEn: String
+    description: String
+    sortOrder: Int
+    isActive: Boolean
+}
+
+# SMTP & Email Types
+
+# Тип за SMTP настройки
+type SmtpSettings {
+    id: ID!
+    smtpHost: String!
+    smtpPort: Int!
+    smtpUsername: String!
+    fromEmail: String!
+    fromName: String
+    useTls: Boolean!
+    useSsl: Boolean!
+    smtpAuth: Boolean!
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String
+    lastTestedAt: String
+    testResult: String
+    providerName: String
+    displayName: String!
+    hasValidConfiguration: Boolean!
+}
+
+# Тип за резултат от SMTP тест
+type SmtpTestResult {
+    success: Boolean!
+    message: String!
+}
+
+# Тип за статус на SMTP конфигурацията
+type SmtpConfigurationStatus {
+    configured: Boolean!
+    message: String!
+    activeSettings: SmtpSettings
+}
+
+# Password Reset Types
+
+# Тип за резултат от password reset заявка
+type PasswordResetResult {
+    success: Boolean!
+    message: String!
+}
+
+# Тип за валидация на token
+type TokenValidationResult {
+    valid: Boolean!
+    message: String!
+}
+
+# Тип за информация за token
+type TokenInfo {
+    valid: Boolean!
+    status: String!
+    userEmail: String
+    userName: String
+    minutesUntilExpiration: Int
+}
+
+# Input types за SMTP
+
+# Входни данни за създаване на SMTP настройки
+input CreateSmtpSettingsInput {
+    smtpHost: String!
+    smtpPort: Int!
+    smtpUsername: String!
+    smtpPassword: String!
+    fromEmail: String!
+    fromName: String
+    useTls: Boolean
+    useSsl: Boolean
+    smtpAuth: Boolean
+    providerName: String
+}
+
+# Входни данни за обновяване на SMTP настройки
+input UpdateSmtpSettingsInput {
+    smtpHost: String
+    smtpPort: Int
+    smtpUsername: String
+    smtpPassword: String
+    fromEmail: String
+    fromName: String
+    useTls: Boolean
+    useSsl: Boolean
+    smtpAuth: Boolean
+    providerName: String
+    isActive: Boolean
+}
+
+# Input types за Password Reset
+
+# Входни данни за заявка за password reset
+input RequestPasswordResetInput {
+    email: String!
+}
+
+# Входни данни за reset на парола
+input ResetPasswordInput {
+    token: String!
+    newPassword: String!
+}
+
+# ========== BACKUP TYPES ==========
+
+# Тип за настройки на backup
+type BackupSettings {
+    id: ID!
+    s3Endpoint: String!
+    s3Region: String!
+    s3BucketName: String!
+    s3AccessKey: String!
+    backupPrefix: String
+    autoBackupEnabled: Boolean!
+    backupCronExpression: String
+    retentionDays: Int!
+    maxBackups: Int
+    isActive: Boolean!
+    lastBackupAt: String
+    lastBackupStatus: String
+    lastBackupSizeBytes: Float
+    lastBackupFilename: String
+    lastErrorMessage: String
+    createdAt: String!
+    updatedAt: String
+    lastTestedAt: String
+    testResult: String
+    hasValidConfiguration: Boolean!
+}
+
+# Тип за история на backup
+type BackupHistory {
+    id: ID!
+    filename: String!
+    s3Key: String!
+    sizeBytes: Float!
+    status: String!
+    backupType: String!
+    startedAt: String!
+    completedAt: String
+    durationSeconds: Float
+    errorMessage: String
+    databaseName: String
+    checksum: String
+    initiatedBy: String
+    deletedAt: String
+    formattedSize: String!
+}
+
+# Тип за статистика на backup
+type BackupStats {
+    totalBackups: Int!
+    totalSizeBytes: Float!
+    formattedTotalSize: String!
+    lastBackupAt: String
+    lastBackupStatus: String
+    isScheduled: Boolean!
+    nextBackupTime: String
+}
+
+# Входни данни за настройки на backup
+input BackupSettingsInput {
+    s3Endpoint: String
+    s3Region: String
+    s3BucketName: String
+    s3AccessKey: String
+    s3SecretKey: String
+    backupPrefix: String
+    autoBackupEnabled: Boolean
+    backupCronExpression: String
+    retentionDays: Int
+    maxBackups: Int
+}

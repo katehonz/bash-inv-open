@@ -1,0 +1,14 @@
+SU
+ 
+ 
+ SUPERADMIN данни:
+  - Username: superadmin
+  - Email: admin@invoiceapp.com (не superadmin@invoiceapp.com)
+  - Password: CHANGE_THIS_PASSWORD
+ 
+  Паролата трябва да се промени при първоначално инсталиране!
+ 
+  Влез с username superadmin или email admin@invoiceapp.com и парола
+   CHANGE_THIS_PASSWORD.
+
+

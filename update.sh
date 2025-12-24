@@ -58,4 +58,4 @@ done
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}  Update Complete!${NC}"
 echo -e "${GREEN}========================================${NC}"
-echo -e "Application: ${YELLOW}https://inv.cyberbuch.org${NC}"
+echo -e "Application: ${YELLOW}https://your-domain.com${NC}"

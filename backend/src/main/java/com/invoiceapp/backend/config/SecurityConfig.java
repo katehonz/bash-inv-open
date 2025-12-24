@@ -66,8 +66,8 @@ public class SecurityConfig {
             "http://localhost:8080",
             "http://localhost:3000",
             "http://localhost:3001",
-            "https://inv.cyberbuch.org",
-            "http://inv.cyberbuch.org"
+            "https://your-domain.com",
+            "http://your-domain.com"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));

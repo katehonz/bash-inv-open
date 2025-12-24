@@ -137,7 +137,7 @@ sudo systemctl reload nginx
 Добавете към Caddyfile:
 
 ```caddy
-inv.cyberbuch.org {
+your-domain.com {
     reverse_proxy localhost:3000
     encode gzip
 

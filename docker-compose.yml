@@ -11,7 +11,7 @@ services:
       # Database connection - използва PostgreSQL от rs-ac-bg мрежата
       SPRING_DATASOURCE_URL: jdbc:postgresql://accounting_db:5432/sp_inv_app
       SPRING_DATASOURCE_USERNAME: app
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-MySecurePassword123456789ABCDEFGH}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD environment variable required}
 
       # JPA/Hibernate
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
@@ -29,7 +29,7 @@ services:
       SPRING_GRAPHQL_PATH: /graphql
 
       # JWT Security
-      JWT_SECRET: ${JWT_SECRET:-MySecureJwtSecretKeyThatIsAtLeast32CharactersLong!}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET environment variable required}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400}
 
       # Currency settings
@@ -51,7 +51,7 @@ services:
       SERVER_PORT: 8080
 
       # Application URLs
-      APP_FRONTEND_URL: https://inv.cyberbuch.org
+      APP_FRONTEND_URL: https://your-domain.com
 
     expose:
       - "8080"
@@ -79,7 +79,7 @@ services:
     container_name: invoicing_frontend
     environment:
       REACT_APP_API_URL: /graphql
-      REACT_APP_DOMAIN: inv.cyberbuch.org
+      REACT_APP_DOMAIN: your-domain.com
     expose:
       - "80"
     depends_on:
@@ -102,7 +102,7 @@ services:
       PGHOST: accounting_db
       PGPORT: 5432
       PGUSER: app
-      PGPASSWORD: ${DB_PASSWORD:-MySecurePassword123456789ABCDEFGH}
+      PGPASSWORD: ${DB_PASSWORD:?DB_PASSWORD environment variable required}
     command: >
       sh -c "
         echo 'Waiting for PostgreSQL to be ready...';

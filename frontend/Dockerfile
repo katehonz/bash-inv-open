@@ -21,7 +21,7 @@ RUN npm run build
 FROM nginx:stable
 
 # Add labels for metadata
-LABEL maintainer="cyberbuch.org"
+LABEL maintainer="your-domain.com"
 LABEL application="sp-inv-frontend"
 LABEL description="Invoice Management Frontend - React"
 

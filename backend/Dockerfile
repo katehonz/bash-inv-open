@@ -21,7 +21,7 @@ RUN mvn clean package -DskipTests -B
 FROM eclipse-temurin:17-jre
 
 # Add labels for metadata
-LABEL maintainer="cyberbuch.org"
+LABEL maintainer="your-domain.com"
 LABEL application="sp-inv-backend"
 LABEL description="Invoice Management Backend - Spring Boot"
 

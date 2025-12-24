@@ -26,7 +26,7 @@ public class EmailService {
     private final SmtpSettingsRepository smtpSettingsRepository;
     private final EncryptionService encryptionService;
 
-    @Value("${app.frontend-url:https://inv.cyberbuch.org}")
+    @Value("${app.frontend-url:https://your-domain.com}")
     private String frontendUrl;
 
     @Autowired

@@ -20,7 +20,7 @@
 ## Достъп до приложението
 
 ### Production URL
-🌐 **https://inv.cyberbuch.org**
+🌐 **https://your-domain.com**
 
 - Frontend: React SPA
 - Backend API: /graphql endpoint
@@ -41,7 +41,7 @@
 Файл: `/home/rshet/hetz-rs/caddy-proxy/Caddyfile`
 
 ```caddy
-inv.cyberbuch.org {
+your-domain.com {
     encode gzip
 
     handle /graphql {

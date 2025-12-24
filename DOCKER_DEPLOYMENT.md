@@ -139,7 +139,7 @@ COPY --from=builder /app/build /usr/share/nginx/html
 - Frontend: Достъпен чрез Caddy proxy
 
 ### Production достъп (чрез Caddy)
-- **https://inv.cyberbuch.org**
+- **https://your-domain.com**
   - Frontend: React SPA
   - Backend API: /graphql endpoint
 
@@ -155,7 +155,7 @@ Caddy reverse proxy автоматично управлява:
 Конфигурацията е в `/home/rshet/hetz-rs/caddy-proxy/Caddyfile`:
 
 ```caddy
-inv.cyberbuch.org {
+your-domain.com {
     encode gzip
 
     handle /graphql {
